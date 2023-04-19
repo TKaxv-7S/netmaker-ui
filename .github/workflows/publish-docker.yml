@@ -27,6 +27,8 @@ jobs:
       - 
         name: Checkout
         uses: actions/checkout@v3
+        with:
+          ref: develop
       - 
         name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -46,4 +48,4 @@ jobs:
           context: .
           platforms: linux/amd64, linux/arm64, linux/arm/v7
           push: true
-          tags: ${{ github.repository }}:${{ env.TAG }}, ${{ github.repository }}:latest
+          tags: tkaxv7s/netmaker-ui:${{ env.TAG }}, tkaxv7s/netmaker-ui:latest
