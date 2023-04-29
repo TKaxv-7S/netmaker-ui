@@ -1,4 +1,4 @@
-import { FC, useCallback, useState } from 'react'
+import {FC, useCallback, useMemo, useState} from 'react'
 import {
   Button,
   Grid,
@@ -12,10 +12,10 @@ import {
   List,
   ListItem,
   ListItemButton,
-  ListItemText,
+  ListItemText, Autocomplete,
 } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { useDispatch } from 'react-redux'
+import {useDispatch, useSelector} from 'react-redux'
 import {
   useRouteMatch,
   useHistory,
@@ -41,6 +41,7 @@ import { Visibility } from '@mui/icons-material'
 import copy from 'copy-to-clipboard'
 import { CopyAllOutlined } from '@mui/icons-material'
 import CustomizedDialogs from '~components/dialog/CustomDialog'
+import {hostsSelectors} from "~store/selectors";
 
 export const HostDetailPage: FC = () => {
   const { path, url } = useRouteMatch()
@@ -50,6 +51,20 @@ export const HostDetailPage: FC = () => {
 
   const { hostId } = useParams<{ hostId: string }>()
   const host = useGetHostById(decodeURIComponent(hostId))
+
+  const allHosts = useSelector(hostsSelectors.getHosts)
+  const forbidDetectionHosts = host?.forbid_detection_hosts || []
+  const selectedHosts = allHosts.filter(
+      (h) => h.id !== hostId && forbidDetectionHosts.includes(h.id)
+  )
+  const filteredHosts = useMemo(
+      () =>
+          allHosts.filter(
+              (h) => h.id !== hostId
+          ),
+      [allHosts]
+  )
+
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showDeleteRelayModal, setShowDeleteRelayModal] = useState(false)
   const [pageView, setPageView] = useState<
@@ -313,6 +328,24 @@ export const HostDetailPage: FC = () => {
                   label={String(t('hosts.isstatic'))}
                   control={<SwitchField checked={host.isstatic} disabled />}
                   disabled
+                />
+              </Grid>
+              <Grid item xs={12} sx={{ marginBottom: '2rem' }}>
+                <Autocomplete
+                    multiple
+                    options={filteredHosts}
+                    getOptionLabel={(host) => host.name}
+                    value={selectedHosts}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            name="forbid_detection_hosts"
+                            label={String(t('hosts.forbiddetectionhosts'))}
+                            variant="standard"
+                            placeholder="Hosts"
+                        />
+                    )}
+                    disabled
                 />
               </Grid>
               <Grid item xs={12} md={6} sx={rowMargin}>

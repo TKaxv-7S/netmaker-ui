@@ -699,6 +699,7 @@ export const en: LanguageResource = {
     removedefault: 'Click to remove default from host',
     connectednetworkstitle: 'Connected networks (Nodes)',
     proxyenabled: 'Proxy Enabled',
+    forbiddetectionhosts: 'Forbid detection hosts',
     nohostconnected: 'No hosts connected to this server',
     confirmconnect: 'Are you sure you want to connect to network',
     confirmdisconnect: 'Are you sure you want to disconnect from network',

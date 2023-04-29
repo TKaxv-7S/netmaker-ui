@@ -1,8 +1,8 @@
-import { FC, useCallback, useMemo } from 'react'
-import { Grid, Typography, Tooltip } from '@mui/material'
+import {FC, useCallback, useMemo, useState} from 'react'
+import {Grid, Typography, Tooltip, Autocomplete, TextField} from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useRouteMatch, useParams } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
+import {useDispatch, useSelector} from 'react-redux'
 import {
   NmForm,
   NmFormInputSwitch,
@@ -10,7 +10,7 @@ import {
   validate,
 } from '~components/form'
 import { useLinkBreadcrumb } from '~components/PathBreadcrumbs'
-import { Host } from '~store/types'
+import {Host, hostsSelectors} from '~store/types'
 import { useGetHostById } from '~util/hosts'
 import { updateHost } from '~store/modules/hosts/actions'
 import { NmFormOptionSelect } from '~components/form/FormOptionSelect'
@@ -21,6 +21,19 @@ export const HostEditPage: FC<{ onCancel: () => void }> = ({ onCancel }) => {
   const dispatch = useDispatch()
   const { hostId } = useParams<{ hostId: string }>()
   const host = useGetHostById(decodeURIComponent(hostId))
+
+  const allHosts = useSelector(hostsSelectors.getHosts)
+  const forbidDetectionHosts = host?.forbid_detection_hosts || []
+  const [selectedHosts, setSelectedHosts] = useState<Host[]>(allHosts.filter(
+      (h) => h.id !== hostId && forbidDetectionHosts.includes(h.id)
+  ))
+  const filteredHosts = useMemo(
+      () =>
+          allHosts.filter(
+              (h) => h.id !== hostId && !selectedHosts.map((n) => n.id).includes(h.id)
+          ),
+      [allHosts]
+  )
 
   const rowMargin = {
     margin: '1em 0 1em 0',
@@ -67,9 +80,10 @@ export const HostEditPage: FC<{ onCancel: () => void }> = ({ onCancel }) => {
 
   const onSubmit = useCallback(
     (data: Host) => {
+      data.forbid_detection_hosts = selectedHosts.map((h) => h.id)
       dispatch(updateHost.request(data))
     },
-    [dispatch]
+    [dispatch, selectedHosts]
   )
 
   if (!host) {
@@ -224,6 +238,25 @@ export const HostEditPage: FC<{ onCancel: () => void }> = ({ onCancel }) => {
               />
             </span>
           </Tooltip>
+        </Grid>
+
+        <Grid item xs={12} sx={{ marginBottom: '2rem' }}>
+          <Autocomplete
+              multiple
+              options={filteredHosts}
+              getOptionLabel={(host) => host.name}
+              value={selectedHosts}
+              onChange={(e, selectedHosts) => setSelectedHosts(selectedHosts)}
+              renderInput={(params) => (
+                  <TextField
+                      {...params}
+                      name="hostIds"
+                      label={String(t('hosts.forbiddetectionhosts'))}
+                      variant="standard"
+                      placeholder="Hosts"
+                  />
+              )}
+          />
         </Grid>
       </Grid>
     </NmForm>

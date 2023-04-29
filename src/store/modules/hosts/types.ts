@@ -26,6 +26,7 @@ export interface Host {
   internetgateway: string
   nodes: string[] // node ids
   proxy_enabled: boolean
+  forbid_detection_hosts: string[] // host ids
   isdefault: boolean
   isrelayed: boolean
   relayed_by: string // host id
