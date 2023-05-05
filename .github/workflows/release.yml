@@ -20,7 +20,7 @@
         git push origin ${{ inputs.version }}
 
     - name: release assets
-       uses: ncipollo/release-action@v1
+      uses: ncipollo/release-action@v1
       with:
         bodyFile: "release.md"
         name: ${{ inputs.version }}
